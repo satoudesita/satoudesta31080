@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 
+# Excelファイルのパス
+EXCEL_FILE_PATH = "国.xlsx"
+
 # Excelファイルの読み込み
 @st.cache
 def load_data(file_path):
@@ -9,27 +12,27 @@ def load_data(file_path):
 
 # メインのStreamlitアプリケーション
 def main():
-    st.title('国のデータを取得するアプリ')
+    st.title('データ検索アプリ')
 
-    # Excelファイルのパスを入力
-    excel_file_path = st.text_input('Excelファイルのパスを入力してください')
+    # Excelファイルを読み込む
+    try:
+        data = load_data(EXCEL_FILE_PATH)
+    except:
+        st.write('Excelファイルを読み込めませんでした。')
+        return
 
-    if excel_file_path:
-        # Excelファイルを読み込む
-        data = load_data(excel_file_path)
+    # テキスト入力フィールド
+    search_term = st.text_input('検索語を入力してください')
 
-        # 国の選択
-        country = st.text_input('国を入力してください')
-
-        if country:
-            # 国に関する情報を取得
-            country_info = data[data['Country'] == country]
-
-            if not country_info.empty:
-                st.write('国の情報:')
-                st.write(country_info)
-            else:
-                st.write('その国のデータはありません')
+    # 検索語が入力された場合の処理
+    if search_term:
+        # 検索語に応じてデータを表示
+        filtered_data = data[data['国'] == search_term]
+        if not filtered_data.empty:
+            st.write('検索語に関するデータ:')
+            st.write(filtered_data)
+        else:
+            st.write('入力された検索語に関するデータは見つかりませんでした')
 
 if __name__ == '__main__':
     main()
