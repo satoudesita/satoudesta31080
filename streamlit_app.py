@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # 固定のExcelファイルのパス
-EXCEL_FILE_PATH = "data.xlsx"
+EXCEL_FILE_PATH = "国.xlsx"
 
 # Excelファイルの読み込み
 @st.cache
