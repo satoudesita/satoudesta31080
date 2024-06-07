@@ -1,31 +1,93 @@
-# Streamlitライブラリをインポート
-import streamlit as st
+import streamlit as st 
 
-# ページ設定（タブに表示されるタイトル、表示幅）
-st.set_page_config(page_title="タイトル", layout="wide")
+import pandas as pd 
 
-# タイトルを設定
-st.title('Streamlitのサンプルアプリ')
+import random 
 
-# テキスト入力ボックスを作成し、ユーザーからの入力を受け取る
-user_input = st.text_input('あなたの名前を入力してください')
+ 
 
-# ボタンを作成し、クリックされたらメッセージを表示
-if st.button('挨拶する'):
-    if user_input:  # 名前が入力されているかチェック
-        st.success(f'🌟 こんにちは、{user_input}さん! 🌟')  # メッセージをハイライト
-    else:
-        st.error('名前を入力してください。')  # エラーメッセージを表示
+def load_events_from_excel(file_path): 
 
-# スライダーを作成し、値を選択
-number = st.slider('好きな数字（10進数）を選んでください', 0, 100)
+    # Excelファイルからデータを読み込む 
 
-# 補足メッセージ
-st.caption("十字キー（左右）でも調整できます。")
+    df = pd.read_excel(file_path, engine='openpyxl') 
 
-# 選択した数字を表示
-st.write(f'あなたが選んだ数字は「{number}」です。')
+    # 1列目のデータをリストに変換して返す 
 
-# 選択した数値を2進数に変換
-binary_representation = bin(number)[2:]  # 'bin'関数で2進数に変換し、先頭の'0b'を取り除く
-st.info(f'🔢 10進数の「{number}」を2進数で表現すると「{binary_representation}」になります。 🔢')  # 2進数の表示をハイライト
+    events = df.iloc[:, 0].tolist() 
+
+    return events 
+
+ 
+
+def event_sorting_game(): 
+
+    st.title("物事の順序を並べ替えるゲーム") 
+
+ 
+
+    new_problem_button = st.button("新しい問題を表示") 
+
+ 
+
+    if new_problem_button: 
+
+        # Excelファイルから出来事のリストを読み込む 
+
+        events = load_events_from_excel("events.xlsx") 
+
+ 
+
+        # 出来事のリストをランダムにシャッフル 
+
+        random.shuffle(events) 
+
+ 
+
+        # 選択された出来事のリスト 
+
+        selected_events = [] 
+
+ 
+
+        # ボタンで出来事を選択 
+
+        for event in events: 
+
+            if st.button(event): 
+
+                selected_events.append(event) 
+
+ 
+
+        # 選択された出来事を表示 
+
+        st.write("選択された出来事:", selected_events) 
+
+ 
+
+        # 全ての出来事が選択されたら、正しい順序かどうかをチェック 
+
+        if len(selected_events) == len(events): 
+
+            correct_order = load_events_from_excel("events.xlsx") 
+
+            if selected_events == correct_order: 
+
+                st.write("正解です！") 
+
+                new_problem_button = True 
+
+            else: 
+
+                st.write("不正解です。もう一度トライしてください。") 
+
+                st.write("正しい順序は以下の通りです:") 
+
+                st.write(correct_order) 
+
+ 
+
+if __name__ == "__main__": 
+
+    event_sorting_game() 
