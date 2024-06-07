@@ -38,45 +38,49 @@ def event_sorting_game():
 
  
 
-        # 出来事のリストをランダムにシャッフル 
+        # 4つの出来事をランダムに選択 
 
-        random.shuffle(events) 
-
- 
-
-        # 選択された出来事のリスト 
-
-        selected_events = [] 
+        selected_events = random.sample(events, 4) 
 
  
 
-        # ボタンで出来事を選択 
+        # 出来事の順序をシャッフル 
 
-        for event in events[4]: 
-
-            if st.button(event): 
-
-                selected_events.append(event) 
+        random.shuffle(selected_events) 
 
  
 
-        # 選択された出来事を表示 
+        # 出来事を表示 
 
-        st.write("選択された出来事:", selected_events) 
+        for event in selected_events: 
+
+            st.write(event) 
 
  
 
-        # 全ての出来事が選択されたら、正しい順序かどうかをチェック 
+        # 正しい順序を取得 
 
-        if len(selected_events) == 4: 
+        correct_order = sorted(selected_events) 
 
-            correct_order = load_events_from_excel("events.xlsx") [:4]
+ 
 
-            if selected_events == correct_order: 
+        # 入力された順序を取得 
+
+        user_order = [] 
+
+        for event in selected_events: 
+
+            user_order.append(st.text_input(f"{event} の順序を入力してください:", key=event)) 
+
+ 
+
+        # 全ての順序が入力されている場合、正解かどうかを判定 
+
+        if all(user_order): 
+
+            if user_order == correct_order: 
 
                 st.write("正解です！") 
-
-                new_problem_button = True 
 
             else: 
 
@@ -84,7 +88,7 @@ def event_sorting_game():
 
                 st.write("正しい順序は以下の通りです:") 
 
-                st.write(correct_order) 
+                st.write(", ".join(correct_order)) 
 
  
 
