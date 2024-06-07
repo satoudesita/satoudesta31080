@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# Excelファイルのパス
-EXCEL_FILE_PATH = "国.xlsx"
+# 固定のExcelファイルのパス
+EXCEL_FILE_PATH = "data.xlsx"
 
 # Excelファイルの読み込み
 @st.cache
@@ -10,9 +10,14 @@ def load_data(file_path):
     data = pd.read_excel(file_path)
     return data
 
+# 画像を表示
+def show_image(image_path):
+    if image_path:
+        st.image(image_path, caption='画像', use_column_width=True)
+
 # メインのStreamlitアプリケーション
 def main():
-    st.title('データ検索アプリ')
+    st.title('画像表示アプリ')
 
     # Excelファイルを読み込む
     try:
@@ -21,18 +26,17 @@ def main():
         st.write('Excelファイルを読み込めませんでした。')
         return
 
-    # テキスト入力フィールド
-    search_term = st.text_input('検索語を入力してください')
+    # 画像の列が含まれていることを確認
+    if 'Image' not in data.columns:
+        st.write('Excelファイルに画像の列が含まれていません。')
+        return
 
-    # 検索語が入力された場合の処理
-    if search_term:
-        # 検索語に応じてデータを表示
-        filtered_data = data[data['国'] == search_term]
-        if not filtered_data.empty:
-            st.write('検索語に関するデータ:')
-            st.write(filtered_data)
-        else:
-            st.write('入力された検索語に関するデータは見つかりませんでした')
+    # 画像を表示する行を選択
+    selected_row = st.selectbox('画像を表示する行を選択してください', data.index)
+
+    # 選択された行の画像を表示
+    selected_image_path = data.loc[selected_row, 'Image']
+    show_image(selected_image_path)
 
 if __name__ == '__main__':
     main()
