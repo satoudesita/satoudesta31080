@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 固定のExcelファイルのパス
+# Excelファイルのパス
 EXCEL_FILE_PATH = "国.xlsx"
 
 # Excelファイルの読み込み
@@ -10,14 +10,22 @@ def load_data(file_path):
     data = pd.read_excel(file_path)
     return data
 
-# 画像を表示
-def show_image(image_path):
-    if image_path:
-        st.image(image_path, caption='画像', use_column_width=True)
+# 国の情報と画像を表示
+def show_country_info(country_data):
+    if not country_data.empty:
+        country_name = country_data.iloc[0]['国']
+        st.write(f"国名: {country_name}")
+        country_description = country_data.iloc[0]['説明']
+        st.write(f"説明: {country_description}")
+        country_image_path = country_data.iloc[0]['Image']
+        if country_image_path:
+            st.image(country_image_path, caption='国の画像', use_column_width=True)
+    else:
+        st.write('入力された国の情報が見つかりませんでした。')
 
 # メインのStreamlitアプリケーション
 def main():
-    st.title('画像表示アプリ')
+    st.title('国の情報と画像表示アプリ')
 
     # Excelファイルを読み込む
     try:
@@ -26,17 +34,14 @@ def main():
         st.write('Excelファイルを読み込めませんでした。')
         return
 
-    # 画像の列が含まれていることを確認
-    if 'Image' not in data.columns:
-        st.write('Excelファイルに画像の列が含まれていません。')
-        return
+    # テキスト入力フィールド
+    country_name = st.text_input('国名を入力してください')
 
-    # 画像を表示する行を選択
-    selected_row = st.selectbox('画像を表示する行を選択してください', data.index)
-
-    # 選択された行の画像を表示
-    selected_image_path = data.loc[selected_row, 'Image']
-    show_image(selected_image_path)
+    # ユーザーが国名を入力した場合の処理
+    if country_name:
+        # 入力された国名に応じてデータをフィルタリング
+        country_data = data[data['国'] == country_name]
+        show_country_info(country_data)
 
 if __name__ == '__main__':
     main()
