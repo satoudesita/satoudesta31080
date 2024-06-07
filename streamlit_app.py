@@ -40,7 +40,7 @@ def main():
     # ユーザーが国名を入力した場合の処理
     if country_name:
         # 入力された国名に応じてデータをフィルタリング
-        country_data = data[data['国'] == country_name]
+        country_data = data[data['country'] == country_name]
         show_country_info(country_data)
 
 if __name__ == '__main__':
