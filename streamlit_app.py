@@ -52,7 +52,7 @@ def event_sorting_game():
 
         # ボタンで出来事を選択 
 
-        for event in events: 
+        for event in events[4]: 
 
             if st.button(event): 
 
@@ -68,9 +68,9 @@ def event_sorting_game():
 
         # 全ての出来事が選択されたら、正しい順序かどうかをチェック 
 
-        if len(selected_events) == len(events): 
+        if len(selected_events) == 4: 
 
-            correct_order = load_events_from_excel("events.xlsx") 
+            correct_order = load_events_from_excel("events.xlsx") [:4]
 
             if selected_events == correct_order: 
 
