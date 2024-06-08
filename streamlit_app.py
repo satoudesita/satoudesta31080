@@ -18,9 +18,9 @@ def show_country_info(country_data):
         st.write(f"国名: {country_name}")
         country_description = country_data.iloc[0]['人口']
         st.write(f"説明: {country_description}")  # 説明を表示
-        country_image_path = country_data.iloc[0]['画像']
-        if country_image_path:
-            st.image(country_image_path, caption='国の画像', use_column_width=True)
+        country_image_url = country_data.iloc[0]['画像']
+        if country_image_url:
+            st.image(country_image_url, caption='国の画像', use_column_width=True)
     else:
         st.write('入力された国の情報が見つかりませんでした。')
 
