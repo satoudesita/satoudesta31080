@@ -1,52 +1,68 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
-# Excelファイルのパス
-EXCEL_FILE_PATH = "国.xlsx"
+import numpy as np
 
-# Excelファイルの読み込み
-@st.cache
-def load_data(file_path):
-    data = pd.read_excel(file_path)
-    return data
+st.set_page_config(page_title="物理用語ガチャ")
 
-# 国の情報と画像を表示
-def show_country_info(country_data):
-    if not country_data.empty:
-        country_name = country_data.iloc[0]['国']
-        st.write(f"国名: {country_name}")
-        country_description = country_data.iloc[0]['人口']
-        st.write(f"説明: {country_description}")  # 説明を表示
-        if '画像' in country_data.columns:
-            country_image_url = country_data.iloc[0]['画像']
-            if country_image_url:
-                st.image(country_image_url, caption='国の画像', use_column_width=True)
+# タイトルと説明
+st.title('物理用語ガチャ')
+
+st.write('物理用語をランダムに表示して、勉強をサポートします！')
+st.write('がんばってください！')
+
+# Load the data
+@st.cache_data
+def load_data():
+    return pd.read_excel("rekisi.xlsx")
+
+words_df = load_data()
+
+# ガチャ機能
+if st.button('ガチャを引く！'):
+    rarity_probs = {
+        'N': 0.4,
+        'R': 0.3,
+        'SR': 0.2,
+        'SSR': 0.1
+    }
+    chosen_rarity = np.random.choice(list(rarity_probs.keys()), p=list(rarity_probs.values()))
+    subset_df = words_df[words_df['難易度'] == chosen_rarity]
+    selected_word = subset_df.sample().iloc[0]
+    
+    # クイズ用の選択肢を生成
+    other_words = words_df[words_df['問題'] != selected_word['問題']].sample(2)
+    choices = other_words['回答'].tolist() + [selected_word['回答']]
+    np.random.shuffle(choices)
+    
+    # セッションステートに選択された単語とクイズ選択肢を保存
+    st.session_state.selected_word = selected_word
+    st.session_state.choices = choices
+    st.session_state.correct_answer = selected_word['回答']
+    st.session_state.display_meaning = False
+    st.session_state.quiz_answered = False
+
+if 'selected_word' in st.session_state:
+    st.header(f"問題: {st.session_state.selected_word['問題']}")
+    st.subheader(f"難易度: {st.session_state.selected_word['難易度']}")
+
+    # クイズを表示
+    st.write("この問題の年号はどれでしょう？")
+    quiz_answer = st.radio("選択肢", st.session_state.choices)
+    
+    if st.button('回答する'):
+        st.session_state.quiz_answered = True
+        st.session_state.selected_choice = quiz_answer
+
+    if st.session_state.quiz_answered:
+        if st.session_state.selected_choice == st.session_state.correct_answer:
+            st.success("正解です！")
         else:
-            st.write('画像の列が存在しません。')
-    else:
-        st.write('入力された国の情報が見つかりませんでした。')
+            st.error("不正解です。")
+        st.write(f"正しい意味: {st.session_state.correct_answer}")
 
+    # 意味を確認するボタンを追加
+    if st.button('年号を確認する'):
+        st.session_state.display_meaning = True
 
-
-# メインのStreamlitアプリケーション
-def main():
-    st.title('国の情報と画像表示アプリ')
-
-    # Excelファイルを読み込む
-    try:
-        data = load_data(EXCEL_FILE_PATH)
-    except:
-        st.write('Excelファイルを読み込めませんでした。')
-        return
-
-    # テキスト入力フィールド
-    country_name = st.text_input('国名を入力してください')
-
-    # ユーザーが国名を入力した場合の処理
-    if country_name:
-        # 入力された国名に応じてデータをフィルタリング
-        country_data = data[data['国'] == country_name]
-        show_country_info(country_data)
-
-if __name__ == '__main__':
-    main()
+    if st.session_state.display_meaning:
+        st.write(f"回答: {st.session_state.selected_word['回答']}")
