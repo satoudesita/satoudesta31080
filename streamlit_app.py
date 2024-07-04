@@ -20,10 +20,7 @@ words_df = load_data()
 # ガチャ機能
 if st.button('ガチャを引く！'):
     rarity_probs = {
-        'N': 0.4,
-        'R': 0.3,
-        'SR': 0.2,
-        'SSR': 0.1
+        'N': 1.0,
     }
     chosen_rarity = np.random.choice(list(rarity_probs.keys()), p=list(rarity_probs.values()))
     subset_df = words_df[words_df['難易度'] == chosen_rarity]
