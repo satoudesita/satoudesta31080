@@ -8,7 +8,7 @@ st.set_page_config(page_title="歴史ガチャ")
 # タイトルと説明
 st.title('歴史ガチャ')
 st.write('歴史をランダムに表示して、勉強をサポートします！')
-st.write('がんばってください！')
+st.write('がんばってください')
 
 # CSSを適用して背景色を設定
 st.write(
