@@ -7,7 +7,7 @@ st.set_page_config(page_title="歴史ガチャ")
 
 st.markdown{
     style{
-        background-color:#dcdcdc
+        background-color:#dcdcdc;
     }
 }
 # タイトルと説明
