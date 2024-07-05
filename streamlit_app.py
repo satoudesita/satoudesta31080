@@ -15,7 +15,7 @@ st.write(
     f"""
     <style>
         .stApp {{
-            background-color: #dcdcdc;
+            background-color: #f8f8ff;
         }}
     </style>
     """,
@@ -23,7 +23,7 @@ st.write(
 )
 
 # データの読み込み
-@st.cache
+@st.cache_data
 def load_data():
     return pd.read_excel("rekisi.xlsx")
 
