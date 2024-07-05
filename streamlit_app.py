@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import time
 
 # ページタイトルの設定
-st.set_page_config(page_title="歴史ガチャ")
+st.set_page_config(page_title="歴史問題")
 
 # タイトルと説明
-st.title('歴史ガチャ')
+st.title('歴史問題')
 st.write('歴史をランダムに表示して、勉強をサポートします！')
 st.write('がんばってください')
 
@@ -54,8 +55,12 @@ if st.button('ガチャを引く！'):
     st.session_state.selected_word = selected_word
     st.session_state.choices = choices
     st.session_state.correct_answer = selected_word['回答']
-    st.session_state.display_meaning = False
+    st.session_state.display_meaning = False  # 初期化
     st.session_state.quiz_answered = False
+    st.session_state.start_time = time.time()  # タイマーの開始時刻
+
+    # タイマーをリセットして再開
+    st.session_state.timer_active = True
 
 # 選択された単語とクイズを表示
 if 'selected_word' in st.session_state:
@@ -70,27 +75,39 @@ if 'selected_word' in st.session_state:
         st.session_state.quiz_answered = True
         st.session_state.selected_choice = quiz_answer
         
+        # タイマーを終了する
+        st.session_state.timer_active = False
+        
         # 正解不正解にかかわらず正解数または不正解数を増やす
         if quiz_answer == st.session_state.correct_answer:
             st.session_state.correct_answers += 1
-        else:
-            st.session_state.incorrect_answers += 1
-
-    # 正誤フィードバックを表示
-    if st.session_state.quiz_answered:
-        if st.session_state.selected_choice == st.session_state.correct_answer:
             st.success("正解です！")
         else:
+            st.session_state.incorrect_answers += 1
             st.error("不正解です。")
-        st.write(f"正しい意味: {st.session_state.correct_answer}")
-
-    # 正解を表示するボタン
-    if st.button('年号を確認する'):
+        
+        # 正しい意味を表示するフラグをセット
         st.session_state.display_meaning = True
 
-    # 表示する場合は正解を表示
-    if st.session_state.display_meaning:
-        st.write(f"回答: {st.session_state.selected_word['回答']}")
+# タイマーの表示と制御
+if 'timer_active' in st.session_state and st.session_state.timer_active:
+    start_time = st.session_state.start_time
+    elapsed_time = time.time() - start_time
+    remaining_time = max(0, 10 - elapsed_time)  # 10秒タイマーの残り時間
+    
+    timer_placeholder = st.empty()
+    while remaining_time > 0:
+        elapsed_time = time.time() - start_time
+        remaining_time = max(0, 10 - elapsed_time)
+        timer_placeholder.text(f"残り時間: {remaining_time:.1f} 秒")
+        time.sleep(1)  # 1秒ごとに更新
+
+    timer_placeholder.text(f"時間切れ！ 正解は以下です： {st.session_state.correct_answer}")
+
+    # 時間切れ時も不正解としてカウント
+    if not st.session_state.quiz_answered:
+        st.session_state.incorrect_answers += 1
+        st.error("時間切れです。不正解。")
 
 # 正解数と不正解数を四角で囲んで色を淡い水色にして表示
 col1, col2 = st.columns(2)
@@ -102,6 +119,7 @@ with col1:
         f'</div>',
         unsafe_allow_html=True
     )
+    
 with col2:
     st.markdown(
         f'<div style="background-color: #ADD8E6; padding: 5px; border-radius: 3px;">'
@@ -110,3 +128,9 @@ with col2:
         f'</div>',
         unsafe_allow_html=True
     )
+
+# 正解数と不正解数をリセットするボタン
+if st.button('正解数と不正解数をリセット'):
+    st.session_state.correct_answers = 0
+    st.session_state.incorrect_answers = 0
+    st.text('もう一度押して下さい')
