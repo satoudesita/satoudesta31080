@@ -5,16 +5,22 @@ import numpy as np
 # ページタイトルの設定
 st.set_page_config(page_title="歴史ガチャ")
 
-st.markdown(
-    <style>
-    st.app{
-        background-color:#dcdcdc;
-    }
-)
 # タイトルと説明
 st.title('歴史ガチャ')
 st.write('歴史をランダムに表示して、勉強をサポートします！')
 st.write('がんばってください！')
+
+# CSSを適用して背景色を設定
+st.write(
+    f"""
+    <style>
+        .stApp {{
+            background-color: #dcdcdc;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # データの読み込み
 @st.cache
