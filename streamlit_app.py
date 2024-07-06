@@ -71,43 +71,58 @@ if 'selected_word' in st.session_state:
     st.write("この問題の年号はどれでしょう？")
     quiz_answer = st.radio("選択肢", st.session_state.choices)
     
-    if st.button('回答する'):
-        st.session_state.quiz_answered = True
-        st.session_state.selected_choice = quiz_answer
-        
-        # タイマーを終了する
-        st.session_state.timer_active = False
-        
-        # 正解不正解にかかわらず正解数または不正解数を増やす
-        if quiz_answer == st.session_state.correct_answer:
-            st.session_state.correct_answers += 1
-            st.success("正解です！")
-        else:
-            st.session_state.incorrect_answers += 1
-            st.error("不正解です。")
-        
-        # 正しい意味を表示するフラグをセット
-        st.session_state.display_meaning = True
+    if not st.session_state.quiz_answered:
+        if st.button('回答する'):
+            st.session_state.quiz_answered = True
+            st.session_state.selected_choice = quiz_answer
+            
+            # タイマーを終了する
+            st.session_state.timer_active = False
+            
+            # 正解不正解にかかわらず正解数または不正解数を増やす
+            if quiz_answer == st.session_state.correct_answer:
+                st.session_state.correct_answers += 1
+                st.success("正解です！")
+            else:
+                st.session_state.incorrect_answers += 1
+                st.error(f"不正解です。正解は {st.session_state.correct_answer} でした。")
+            
+            # 正しい意味を表示するフラグをセット
+            st.session_state.display_meaning = True
+    else:
+        st.write("回答済みです。次の問題に進んでください。")
 
 # タイマーの表示と制御
 if 'timer_active' in st.session_state and st.session_state.timer_active:
     start_time = st.session_state.start_time
     elapsed_time = time.time() - start_time
     remaining_time = max(0, 10 - elapsed_time)  # 10秒タイマーの残り時間
+    timer_style = (
+        
+        f'<div style="background-color: #f0f0f0; padding: 10px; border-radius: 10px;'
+        f' box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);">'
+        f'<h2 style="color: #333; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>'
+        f'</div>'
+    )
     
     timer_placeholder = st.empty()
+    timer_placeholder.markdown(timer_style, unsafe_allow_html=True)
     while remaining_time > 0:
         elapsed_time = time.time() - start_time
         remaining_time = max(0, 10 - elapsed_time)
-        timer_placeholder.text(f"残り時間: {remaining_time:.1f} 秒")
+        timer_placeholder.markdown(
+            f'<div style="background-color: #ADD8E6; padding: 5px; border-radius: 3px;">'
+            f'<h2 style="color: #333; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>',
+            unsafe_allow_html=True
+        )
         time.sleep(1)  # 1秒ごとに更新
 
-    timer_placeholder.text(f"時間切れ！ 正解は以下です： {st.session_state.correct_answer}")
+
 
     # 時間切れ時も不正解としてカウント
     if not st.session_state.quiz_answered:
         st.session_state.incorrect_answers += 1
-        st.error("時間切れです。不正解。")
+        st.error(f"時間切れです。正解は {st.session_state.correct_answer} でした。")
 
 # 正解数と不正解数を四角で囲んで色を淡い水色にして表示
 col1, col2 = st.columns(2)
