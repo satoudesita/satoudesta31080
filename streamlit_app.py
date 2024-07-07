@@ -2,9 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
-
 # ページタイトルの設定
 st.set_page_config(page_title="歴史問題")
+
+# 画像のURL
+image_url = "https://th.bing.com/th/id/OIP.j1smnJA5KPDPCuPmZ6hAigHaHu?w=158&h=180&c=7&r=0&o=5&pid=1.7"
+
+# 画像を表示
+st.image(image_url, caption='', width=50)  # 幅を調整してタイトルの近くに表示する
 
 # タイトルと説明
 st.title('歴史問題')
