@@ -111,8 +111,7 @@ if 'timer_active' in st.session_state and st.session_state.timer_active:
         elapsed_time = time.time() - start_time
         remaining_time = max(0, 10 - elapsed_time)
         timer_placeholder.markdown(
-            f'<div style="background-color: #ADD8E6; padding: 5px; border-radius: 3px;">'
-            f'<h2 style="color: #333; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>',
+            f'<h2 style="color: #20b2aa; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>',
             unsafe_allow_html=True
         )
         time.sleep(1)  # 1秒ごとに更新
