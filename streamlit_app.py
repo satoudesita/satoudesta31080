@@ -35,7 +35,7 @@ if 'correct_answers' not in st.session_state:
 
 if 'incorrect_answers' not in st.session_state:
     st.session_state.incorrect_answers = 0
-
+ti = st.number_input('制限時間を入力してください', min_value=1, max_value=60, value=10, step=1)
 # ガチャ機能
 if st.button('ガチャを引く！'):
     rarity_probs = {
@@ -95,7 +95,7 @@ if 'selected_word' in st.session_state:
 if 'timer_active' in st.session_state and st.session_state.timer_active:
     start_time = st.session_state.start_time
     elapsed_time = time.time() - start_time
-    remaining_time = max(0, 10 - elapsed_time)  # 10秒タイマーの残り時間
+    remaining_time = max(0, (ti) - elapsed_time)  # 10秒タイマーの残り時間
     timer_style = (
         
         f'<div style="background-color: #f0f0f0; padding: 10px; border-radius: 10px;'
@@ -108,7 +108,7 @@ if 'timer_active' in st.session_state and st.session_state.timer_active:
     timer_placeholder.markdown(timer_style, unsafe_allow_html=True)
     while remaining_time > 0:
         elapsed_time = time.time() - start_time
-        remaining_time = max(0, 10 - elapsed_time)
+        remaining_time = max(0, (ti) - elapsed_time)
         timer_placeholder.markdown(
             f'<h2 style="color: #20b2aa; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>',
             unsafe_allow_html=True
