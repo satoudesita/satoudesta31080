@@ -67,7 +67,7 @@ if st.button('ガチャを引く！'):
     # 選択された単語とクイズ選択肢をセッション状態に保存
     st.session_state.selected_word = selected_word
     st.session_state.choices = choices
-    st.session_state.correct_answer = selected_word['回答']
+    st.session_state.correct_answer = str(selected_word['回答'])  # 正しい答えを文字列として保存
     st.session_state.display_meaning = False  # 初期化
     st.session_state.quiz_answered = False
     st.session_state.start_time = time.time()  # タイマーの開始時刻
@@ -83,28 +83,53 @@ if 'selected_word' in st.session_state:
     # クイズ選択肢を表示
     if not st.session_state.quiz_answered and st.session_state.timer_active:
         st.write("この問題の年号はどれでしょう？")
-        quiz_answer = st.radio("選択肢", st.session_state.choices)
+
+        # 4列に並べるための列の設定
+        num_cols = 4  # 一行に表示する選択肢の数
+        cols = st.columns(num_cols)
         
-        if st.button('回答する'):
-            st.session_state.quiz_answered = True
-            st.session_state.selected_choice = quiz_answer
+        # 各選択肢をボタンとして表示
+        for i, choice in enumerate(st.session_state.choices):
+            # choiceがint型の場合、文字列に変換する
+            if isinstance(choice, (int, np.int64)):
+                choice = str(choice)
             
-            # タイマーを終了する
-            st.session_state.timer_active = False
-            
-            # 正解不正解にかかわらず正解数または不正解数を増やす
-            if quiz_answer == st.session_state.correct_answer:
-                st.session_state.correct_answers += 1
-                st.success("正解です！")
-            else:
-                st.session_state.incorrect_answers += 1
-                st.error(f"不正解です。正解は {st.session_state.correct_answer} でした。")
-            
-            # 正しい意味を表示するフラグをセット
-            st.session_state.display_meaning = True
+            with cols[i % num_cols]:
+                if st.button(choice, key=f'choice_{i}'):
+                    st.session_state.quiz_answered = True
+                    st.session_state.selected_choice = choice
+
+                    # タイマーを終了する
+                    st.session_state.timer_active = False
+
+                    # 正解不正解にかかわらず正解数または不正解数を増やす
+                    if choice == st.session_state.correct_answer:
+                        st.session_state.correct_answers += 1
+                        st.success("正解です！")
+                    else:
+                        st.session_state.incorrect_answers += 1
+                        st.error(f"不正解です。正解は {st.session_state.correct_answer} でした。")
+                    
+                    # 正しい意味を表示するフラグをセット
+                    st.session_state.display_meaning = True
 
     elif st.session_state.quiz_answered or not st.session_state.timer_active:
         st.write("回答済みです。次の問題に進んでください。")
+
+        # 不正解時の正しい答えを表示
+        if st.session_state.correct_answer:
+            st.write("正しい答えは次の通りです:")
+            # 正しい答えも含めて選択肢を4列に並べる
+            num_cols = 4
+            cols = st.columns(num_cols)
+            correct_choices = [st.session_state.correct_answer]  # 正しい答えのリスト
+            
+            for i in range(num_cols):
+                with cols[i]:
+                    if i < len(correct_choices):
+                        st.write(f"- {correct_choices[i]}")
+                    else:
+                        st.write("")
 
 # タイマーの表示と制御
 if 'timer_active' in st.session_state and st.session_state.timer_active:
