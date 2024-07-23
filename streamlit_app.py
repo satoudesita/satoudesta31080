@@ -11,12 +11,26 @@ st.title('歴史問題')
 st.write('歴史をランダムに表示して、勉強をサポートします！')
 st.write('がんばってください')
 
-# CSSを適用して背景色を設定
+# CSSを適用して背景色と選択肢ボタンの色を設定
 st.write(
     f"""
     <style>
         .stApp {{
             background-color: #f8f8ff;
+        }}
+        .stButton button {{
+            background-color: #f0ffff;  /* ボタンの背景色 */
+            color: black;  /* ボタンの文字色 */
+            border-radius: 30px;  /* ボタンの角を丸くする */
+            padding: 10px 20px;  /* ボタンの内側の余白 */
+            font-size: 18px;  /* ボタンの文字のサイズ */
+            font-weight: bold;  /* ボタンの文字を太字にする */
+        }}
+        .stButton button:hover {{
+            background-color: #a4b0c6;  /* ボタンのホバー時の背景色 */
+        }}
+        .stButton button:active {{
+            background-color: #5f9ea0;  /* ボタンのアクティブ時の背景色 */
         }}
     </style>
     """,
