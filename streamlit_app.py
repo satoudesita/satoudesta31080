@@ -8,8 +8,8 @@ st.set_page_config(page_title="歴史問題")
 
 # タイトルと説明
 st.title('歴史問題')
-st.write('歴史をランダムに表示して、勉強をサポートします！')
-st.write('がんばってください')
+st.write('問題に対応した年号を答えてください！！')
+st.write('正解数が多ければ、もんだいがむずかしくなるかも、、、？')
 
 # CSSを適用して背景色と選択肢ボタンの色を設定
 st.write(
@@ -54,7 +54,7 @@ if 'incorrect_answers' not in st.session_state:
 if 'num_choices' not in st.session_state:
     st.session_state.num_choices = 3  # 初期は選択肢3つ
 
-ti = st.slider('制限時間を入力してください', 0, 30, 15)
+ti = st.slider('制限時間を入力してください', 3, 30, 15)
 
 # 正解数が2を超えた場合に選択肢の数を増やす
 if 5 <= st.session_state.correct_answers <= 10:
