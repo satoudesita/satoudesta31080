@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
+
 # ページタイトルの設定
 st.set_page_config(page_title="歴史問題")
 
@@ -35,7 +36,20 @@ if 'correct_answers' not in st.session_state:
 
 if 'incorrect_answers' not in st.session_state:
     st.session_state.incorrect_answers = 0
-ti = st.number_input('制限時間を入力してください', min_value=1, max_value=60, value=10, step=1)
+
+if 'num_choices' not in st.session_state:
+    st.session_state.num_choices = 3  # 初期は選択肢3つ
+
+ti = st.slider('制限時間を入力してください', 0, 30, 15)
+
+# 正解数が2を超えた場合に選択肢の数を増やす
+if 5 <= st.session_state.correct_answers <= 10:
+    st.session_state.num_choices = 5
+elif st.session_state.correct_answers >= 11:
+    st.session_state.num_choices = 7
+else:
+    st.session_state.num_choices = 3  # 正解数が2以下の場合は選択肢を3つに設定
+
 # ガチャ機能
 if st.button('ガチャを引く！'):
     rarity_probs = {
@@ -46,7 +60,7 @@ if st.button('ガチャを引く！'):
     selected_word = subset_df.sample().iloc[0]
     
     # クイズ用の選択肢を生成
-    other_words = words_df[words_df['問題'] != selected_word['問題']].sample(2)
+    other_words = words_df[words_df['問題'] != selected_word['問題']].sample(st.session_state.num_choices - 1)
     choices = other_words['回答'].tolist() + [selected_word['回答']]
     np.random.shuffle(choices)
     
@@ -67,10 +81,10 @@ if 'selected_word' in st.session_state:
     st.subheader(f"難易度: {st.session_state.selected_word['難易度']}")
 
     # クイズ選択肢を表示
-    st.write("この問題の年号はどれでしょう？")
-    quiz_answer = st.radio("選択肢", st.session_state.choices)
-    
-    if not st.session_state.quiz_answered:
+    if not st.session_state.quiz_answered and st.session_state.timer_active:
+        st.write("この問題の年号はどれでしょう？")
+        quiz_answer = st.radio("選択肢", st.session_state.choices)
+        
         if st.button('回答する'):
             st.session_state.quiz_answered = True
             st.session_state.selected_choice = quiz_answer
@@ -88,16 +102,17 @@ if 'selected_word' in st.session_state:
             
             # 正しい意味を表示するフラグをセット
             st.session_state.display_meaning = True
-    else:
+
+    elif st.session_state.quiz_answered or not st.session_state.timer_active:
         st.write("回答済みです。次の問題に進んでください。")
 
 # タイマーの表示と制御
 if 'timer_active' in st.session_state and st.session_state.timer_active:
     start_time = st.session_state.start_time
     elapsed_time = time.time() - start_time
-    remaining_time = max(0, (ti) - elapsed_time)  # 10秒タイマーの残り時間
+    remaining_time = max(0, (ti) - elapsed_time)  # 残り時間の計算
+    
     timer_style = (
-        
         f'<div style="background-color: #f0f0f0; padding: 10px; border-radius: 10px;'
         f' box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);">'
         f'<h2 style="color: #333; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>'
@@ -106,6 +121,7 @@ if 'timer_active' in st.session_state and st.session_state.timer_active:
     
     timer_placeholder = st.empty()
     timer_placeholder.markdown(timer_style, unsafe_allow_html=True)
+    
     while remaining_time > 0:
         elapsed_time = time.time() - start_time
         remaining_time = max(0, (ti) - elapsed_time)
@@ -113,10 +129,8 @@ if 'timer_active' in st.session_state and st.session_state.timer_active:
             f'<h2 style="color: #20b2aa; font-size: 36px; text-align: center;">残り時間: {remaining_time:.1f} 秒</h2>',
             unsafe_allow_html=True
         )
-        time.sleep(1)  # 1秒ごとに更新
-
-
-
+        time.sleep(0.1)  # タイマーの更新
+    
     # 時間切れ時も不正解としてカウント
     if not st.session_state.quiz_answered:
         st.session_state.incorrect_answers += 1
@@ -146,4 +160,5 @@ with col2:
 if st.button('正解数と不正解数をリセット'):
     st.session_state.correct_answers = 0
     st.session_state.incorrect_answers = 0
+    st.session_state.num_choices = 3  # リセット時に選択肢の数を3つに戻す
     st.text('もう一度押して下さい')
