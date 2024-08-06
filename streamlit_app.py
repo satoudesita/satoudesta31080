@@ -50,7 +50,15 @@ def update_timer(ti):
 
 # 不正解数が制限に達したときの処理
 def end_game():
-    final_score = st.session_state.correct_answers * int(30 / ti * 10)
+    # 難易度によってスコアの倍率を変更
+    multiplier = 1
+    if tabs == '難易度２':
+        multiplier = 1.5
+    elif tabs == '難易度３':
+        multiplier = 2
+
+    final_score = st.session_state.correct_answers * int(30 / ti * 10) * multiplier
+
     st.markdown(
         f"""
         <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -65,10 +73,11 @@ def end_game():
         """,
         unsafe_allow_html=True
     )
+
     if st.button('もう一度', key='reset_button'):
         st.session_state.correct_answers = 0
         st.session_state.incorrect_answers = 0
-        st.script_request_queue.clear()  # ページのリロード
+        st.experimental_rerun()  # ページのリロード
     st.stop()
 
 def display_timer(ti):
@@ -101,7 +110,8 @@ if tabs in ['難易度１', '難易度２', '難易度３']:
         m = 7
 
     # 不正解数が制限に達した場合のゲーム終了
-    if st.session_state.incorrect_answers >= (5 if tabs == '難易度１' else (3 if tabs == '難易度２' else 1)):
+    incorrect_limit = 5 if tabs == '難易度１' else (3 if tabs == '難易度２' else 1)
+    if st.session_state.incorrect_answers >= incorrect_limit:
         end_game()
 
     # ガチャ機能
@@ -181,4 +191,4 @@ if tabs in ['難易度１', '難易度２', '難易度３']:
     if st.button('正解数と不正解数をリセット', key='reset_counts'):
         st.session_state.correct_answers = 0
         st.session_state.incorrect_answers = 0
-        st.script_request_queue.clear()  # ページのリロード
+        st.experimental_rerun()  # ページのリロード
