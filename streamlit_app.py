@@ -29,7 +29,7 @@ def load_data():
 words_df = load_data()
 
 # タブの選択（サイドバーに配置）
-tabs = st.sidebar.radio("選択してください", ['難易度１', '難易度２', '難易度３'])
+tabs = st.sidebar.radio("選択してください", ['使い方','難易度１', '難易度２', '難易度３'])
 
 # 正解数と不正解数のカウンターをセッション状態で初期化
 if 'correct_answers' not in st.session_state:
@@ -94,7 +94,15 @@ def display_timer(ti):
         st.session_state.incorrect_answers += 1
         st.error(f"時間切れです。正解は {st.session_state.correct_answer} でした。")
 
-# 各タブの処理
+if tabs in ['使い方']:
+    st.text("ガチャについて")
+    st.text("1. 問題を解く制限時間を設定する（短いほど得点の倍率が高い）")
+    st.text("2. ガチャを引くボタンを押す")
+    st.text("3. 出てきた問題に対応する年号を4つの年号が書かれている選択肢ボタンから選ぶ")
+    st.text("注意（時間制限を過ぎると不正解扱いになります）")
+    st.text("4. もう一度ガチャを引くボタンを押し、再度問題を解く")
+    st.text("5. 不正解数が5(難易度1の時)を超えると終了となり、それまでの正解数、得点が出ます。")
+
 if tabs in ['難易度１', '難易度２', '難易度３']:
     # スライダーとガチャボタンの表示
     ti = st.slider('時間制限を選択してください。小さいほど得点は高いです', min_value=5, max_value=30, value=15, step=5)
@@ -187,8 +195,3 @@ if tabs in ['難易度１', '難易度２', '難易度３']:
             f'</div>',
             unsafe_allow_html=True
         )
-
-    if st.button('正解数と不正解数をリセット', key='reset_counts'):
-        st.session_state.correct_answers = 0
-        st.session_state.incorrect_answers = 0
-        st.experimental_rerun()  # ページのリロード
