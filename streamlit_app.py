@@ -44,7 +44,7 @@ def sign_up(username, password):
         conn.commit()
         st.success("サインアップ成功！")
     except sqlite3.IntegrityError:
-        st.error("そのユーザー名はすでに使われています。")
+        st.error("そのユーザー名はすでに使われています")
     finally:
         conn.close()
 
