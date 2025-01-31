@@ -1,0 +1,270 @@
+import sqlite3
+import streamlit as st
+import requests
+
+# SQLiteデータベースの接続とテーブルの作成
+def create_user_table():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+    """)
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS buttons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        button_name TEXT NOT NULL,
+        button_color TEXT NOT NULL DEFAULT 'lightgray',
+        is_pressed INTEGER NOT NULL DEFAULT 0
+    )
+    """)
+    conn.commit()
+    conn.close()
+
+def add_button_color_column():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    try:
+        c.execute("ALTER TABLE buttons ADD COLUMN button_color TEXT NOT NULL DEFAULT 'lightgray'")
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        print(f"Error: {e}")
+    finally:
+        conn.close()
+
+def sign_up(username, password):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        st.success("サインアップ成功！")
+    except sqlite3.IntegrityError:
+        st.error("そのユーザー名はすでに使われています")
+    finally:
+        conn.close()
+
+def sign_in(username, password):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = c.fetchone()
+    conn.close()
+    return user
+
+def load_buttons(username):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT id, button_name, button_color, is_pressed FROM buttons WHERE username = ?", (username,))
+    buttons = c.fetchall()
+    conn.close()
+    return buttons
+
+def save_button(username, button_name, button_color):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("INSERT INTO buttons (username, button_name, button_color) VALUES (?, ?, ?)", (username, button_name, button_color))
+    conn.commit()
+    conn.close()
+
+def delete_button(username, button_name):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("DELETE FROM buttons WHERE username = ? AND button_name = ?", (username, button_name))
+    conn.commit()
+    conn.close()
+
+def update_button_state(username, button_name):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("UPDATE buttons SET is_pressed = 1 WHERE username = ? AND button_name = ?", (username, button_name))
+    conn.commit()
+    conn.close()
+
+    # 家事が押されたユーザーを進行中タスクに追加
+    if 'tasks' not in st.session_state:
+        st.session_state.tasks = {}
+    if username not in st.session_state.tasks:
+        st.session_state.tasks[username] = []
+
+    if button_name not in st.session_state.tasks[username]:
+        st.session_state.tasks[username].append(button_name)
+
+def reset_button_state(username):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("UPDATE buttons SET is_pressed = 0 WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
+
+def create_fruit_table():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS fruits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL
+    )
+    """)
+    conn.commit()
+    conn.close()
+
+def add_fruit(fruit_name):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO fruits (name) VALUES (?)", (fruit_name,))
+        conn.commit()
+        st.success(f"{fruit_name}が追加されました！")
+    except sqlite3.IntegrityError:
+        st.error(f"{fruit_name}は既に存在します。")
+    finally:
+        conn.close()
+
+def load_fruits():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT name FROM fruits")
+    fruits = c.fetchall()
+    conn.close()
+    return [fruit[0] for fruit in fruits]
+
+# 初期化処理（家事の進行中タスクを管理するためのtasks属性を追加）
+if 'tasks' not in st.session_state:
+    st.session_state.tasks = {}
+
+# セッション状態でログイン情報を管理
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'username' not in st.session_state:
+    st.session_state.username = None
+
+def create_buttons():
+    name = st.text_input("家事を追加:")
+    button_color = st.color_picker("ボタンの色を選んでください:", "#FF6347")
+
+    # 家事の追加
+    if name:
+        if st.button("家事を追加"):
+            save_button(st.session_state.username, name, button_color)
+
+    # 進行中の家事を表示
+    cols = st.columns(4)
+    for i, (button_id, button_name, button_color, is_pressed) in enumerate(load_buttons(st.session_state.username)):
+        col_index = i % 4
+        with cols[col_index]:
+            button_label = f"{button_name}"
+            button_html = f"""
+            <button style="background-color:{button_color}; width: 100%; height: 50px; border: none; color: white; font-size: 16px;">
+                {button_label}
+            </button>
+            """
+            if is_pressed:
+                st.markdown(button_html, unsafe_allow_html=True)
+                st.write(f"{button_name}のボタンが押されました！")
+                st.write(f"この家事を行ったのは {st.session_state.username} さんです。")
+
+                # ユーザーごとに進行中の家事を管理
+                if 'tasks' not in st.session_state:
+                    st.session_state.tasks = {}
+                if st.session_state.username not in st.session_state.tasks:
+                    st.session_state.tasks[st.session_state.username] = []
+
+                # 進行中の家事に追加
+                if button_name not in st.session_state.tasks[st.session_state.username]:
+                    st.session_state.tasks[st.session_state.username].append(button_name)
+                    st.write(f"進行中の家事に追加: {button_name}")
+            else:
+                # ボタンが押されていない場合、ボタンをクリックして状態を更新
+                if st.button(button_label, key=f"button_{button_id}"):
+                    update_button_state(st.session_state.username, button_name)
+                    st.write(f"{button_name}のボタンがクリックされました！")
+
+    # 家事のリセット
+    if st.button("家事をリセット"):
+        reset_button_state(st.session_state.username)
+        st.session_state.tasks = {}  # 進行中の家事もリセット
+        st.success("全ての家事がリセットされました。")
+    
+    # ユーザーごとの進行中の家事を表示
+    st.write("進行中の家事:")
+
+    # ユーザーを選択する
+    fruits = load_fruits()
+    option = st.selectbox('ユーザーを選んで下さい', fruits if fruits else ['追加して'], key=f"user_selectbox_{st.session_state.username}")
+
+    st.write(f'選択されたユーザー {option} の進行中の家事:')
+
+    # ユーザーの進行中の家事を表示
+    if option in st.session_state.tasks:
+        tasks = st.session_state.tasks[option]
+        if tasks:
+            for task in tasks:
+                st.write(f"・ {task} を行っているのは {option} さんです。")
+        else:
+            st.write("進行中の家事はありません。")
+    else:
+        st.write("進行中の家事はありません。")
+
+def sign_in_screen():
+    username = st.sidebar.text_input("ユーザー名")
+    password = st.sidebar.text_input("パスワード", type="password")
+    
+    if st.sidebar.button("ログイン"):
+        user = sign_in(username, password)
+        if user:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.success("ログイン成功！")
+        else:
+            st.sidebar.error("ユーザー名またはパスワードが間違っています。")
+
+def sign_up_screen():
+    username = st.sidebar.text_input("新しいユーザー名")
+    password = st.sidebar.text_input("新しいパスワード", type="password")
+    confirm_password = st.sidebar.text_input("パスワード確認", type="password")
+    
+    if st.sidebar.button("サインアップ"):
+        if password != confirm_password:
+            st.sidebar.error("パスワードが一致しません。")
+        else:
+            sign_up(username, password)
+
+def home_screen():
+    if st.session_state.logged_in:
+        st.write(f"ログイン中: {st.session_state.username}さん")
+
+        fruits = load_fruits()
+
+        option = st.selectbox('ユーザーを選んで下さい', fruits if fruits else ['追加して'], key="user_selectbox")
+
+        st.write(f'あなたが選んだユーザーは: {option}')
+        
+        new_fruit = st.text_input("新しいユーザーを追加:")
+        if st.button("ユーザーを追加"):
+            if new_fruit:
+                add_fruit(new_fruit)
+            else:
+                st.error("ユーザーの名前を入力してください。")
+
+        create_buttons()
+    else:
+        st.write("左のサイドバーからサインインまたはサインアップを選択してください。")
+
+create_user_table()
+add_button_color_column()
+create_fruit_table()
+
+menu = st.sidebar.radio("メニュー", ["ホーム", "サインイン", "サインアップ"])
+
+if menu == "ホーム":
+    home_screen()
+elif menu == "サインイン":
+    sign_in_screen()
+elif menu == "サインアップ":
+    sign_up_screen()
