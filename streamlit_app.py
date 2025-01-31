@@ -43,7 +43,6 @@ if jan_code:
     if product:
         st.text("商品情報:")
         st.text(f"商品名: {product.get('itemName', '不明')}")
-        st.text(f"品番: {product.get('itemModel', '不明')}")
         st.text(f"ブランド名: {product.get('brandName', '不明')}")
         st.text(f"メーカー名: {product.get('makerName', '不明')}")
         st.text(f"詳細ページ: [商品ページ](https://www.jancodelookup.com/code/{product['codeNumber']})")
