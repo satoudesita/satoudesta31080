@@ -97,7 +97,7 @@ def search_product_by_code(jan_code):
 st.subheader("JANコードで商品検索")
 with st.form(key='my2_form', clear_on_submit=True):
     jan_code = st.text_input(label="JANコードを入力してください", key="search")           
-        
+
     submit_button = st.form_submit_button(label='送信')
 
 if jan_code:
@@ -116,11 +116,27 @@ if jan_code:
 else:
     st.text("JANコードを入力してください")
 
-st.subheader("冷蔵庫の中身")
-    # 商品を表示
-fetch_all_products()
+# 「冷蔵庫の中身」のセクションだけ細くて水色の背景
+st.markdown("""
+    <style>
+        .refrigerator-container {
+            background-color: #c1e4e9;  /* 水色の背景 */
+            padding: 5px;
+            width: 100%;  /* 幅を60%に設定（細くする） */
+            margin: 0 auto;  /* 中央に配置 */
+            border-radius: 5px;  /* 角を丸くする */
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-    # 商品名で削除
+st.subheader("冷蔵庫の中身")
+st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+fetch_all_products()
+st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# 商品名で削除
 delete_name = st.text_input("削除する商品名を入力してください")
 
 if st.button("商品削除（名前）"):
@@ -128,5 +144,3 @@ if st.button("商品削除（名前）"):
     # 削除後に最新の商品リストを表示
     st.text("商品を削除しました。")
     st.rerun()  # アプリケーションを再実行してリストを更新
-    
-
