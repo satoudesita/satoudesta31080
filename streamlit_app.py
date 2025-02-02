@@ -108,7 +108,7 @@ if submit_button and jan_code:
         # 商品をデータベースに挿入（商品名とJANコード） 既存商品がない場合のみ
         if not check_if_product_exists(jan_code):
             insert_product(product.get('itemName', '不明'), jan_code)
-            st.success(f"{product.get('itemName', '不明')} がデータベースに追加されました。")
+            st.success(f"{product.get('itemName', '不明')} が冷蔵庫に追加されました。")
 else:
     if submit_button:
         st.text("JANコードを入力してください")
@@ -119,7 +119,7 @@ st.markdown("""
         .refrigerator-container {
             background-color: #c1e4e9;  /* 水色の背景 */
             padding: 5px;
-            width: 60%;  /* 幅を60%に設定（細くする） */
+            width: 100%;  /* 幅を60%に設定（細くする） */
             margin: 0 auto;  /* 中央に配置 */
             border-radius: 5px;  /* 角を丸くする */
         }
@@ -128,29 +128,36 @@ st.markdown("""
 
 st.subheader("冷蔵庫の中身")
 st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # 商品を取得し、リストとして表示
 if 'products' not in st.session_state:
     st.session_state.products = fetch_all_products()
 
+# 商品名と削除ボタンを列に分ける
 for product in st.session_state.products:
     product_name, jan_code = product
-    st.text(f"商品名: {product_name}, JANコード: {jan_code}")
+    cols = st.columns([3, 1])  # 商品名とボタンを3:1の比率で分ける
 
-    try:
-        # 削除ボタンのkeyを一意に設定する
-        delete_button = st.button(f"削除: {product_name}", key=f"delete_{jan_code}_{product_name}")
-        if delete_button:
-            delete_product_by_code(jan_code)
-            # 削除後にリストを即座に更新する
-            st.session_state.products = fetch_all_products()  # 商品リストを即座に更新
-            st.success(f"{product_name} が削除されました。")
-    except Exception as e:
-        st.error(f"削除中にエラーが発生しました: {str(e)}")
+    with cols[0]:  # 商品名を左のカラムに表示
+        st.text(f"商品名: {product_name}, JANコード: {jan_code}")
+
+    with cols[1]:  # 削除ボタンを右のカラムに表示
+        try:
+            # 削除ボタンのkeyを一意に設定する
+            delete_button = st.button(f"削除", key=f"delete_{jan_code}_{product_name}")
+            if delete_button:
+                delete_product_by_code(jan_code)
+                # 削除後にリストを即座に更新する
+                st.session_state.products = fetch_all_products()  # 商品リストを即座に更新
+                st.success(f"{product_name} が削除されました。")
+        except Exception as e:
+            st.error(f"削除中にエラーが発生しました: {str(e)}")
 
 # 更新ボタンの追加
 if st.button("冷蔵庫の中身を更新"):
     # 最新の商品リストを手動で更新
     st.session_state.products = fetch_all_products()  # 商品リストを再取得
 
+st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
