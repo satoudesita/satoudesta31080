@@ -8,41 +8,21 @@ def connect_db(db_name='products.db'):
     cur = conn.cursor()
     return conn, cur
 
-# テーブル作成の関数
-def create_table():
+# 商品がすでに存在するかをチェックする関数
+def check_if_product_exists(jan_code):
     conn, cur = connect_db()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS products (
-            product TEXT NOT NULL,
-            jan_code TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
+    cur.execute("SELECT * FROM products WHERE jan_code = ?", (jan_code,))
+    existing_product = cur.fetchone()  # JANコードで既存の商品を探す
     conn.close()
-
-# JANコード列を追加する関数
-def add_jan_code_column():
-    conn, cur = connect_db()
-    try:
-        cur.execute("ALTER TABLE products ADD COLUMN jan_code TEXT NOT NULL")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass  # 列がすでに存在している場合はエラーを無視する
-    conn.close()
+    return existing_product is not None  # 商品があればTrueを返す
 
 # 商品を挿入する関数
 def insert_product(product_name, jan_code):
-    conn, cur = connect_db()
-    cur.execute("INSERT INTO products (product, jan_code) VALUES (?, ?)", (product_name, jan_code))
-    conn.commit()
-    conn.close()
-
-# 商品を削除する関数（商品名で）
-def delete_product_by_name(product_name):
-    conn, cur = connect_db()
-    cur.execute("DELETE FROM products WHERE product = ?", (product_name,))
-    conn.commit()
-    conn.close()
+    if not check_if_product_exists(jan_code):  # 商品が存在しない場合のみ追加
+        conn, cur = connect_db()
+        cur.execute("INSERT INTO products (product, jan_code) VALUES (?, ?)", (product_name, jan_code))
+        conn.commit()
+        conn.close()
 
 # 商品を削除する関数（JANコードで）
 def delete_product_by_code(jan_code):
@@ -57,14 +37,29 @@ def fetch_all_products():
     cur.execute("SELECT * FROM products")
     rows = cur.fetchall()
     conn.close()
-    
-    if rows: 
-        for row in rows:
-            st.text(f"商品名: {row[0]}, JANコード: {row[1]}")
-    else:
-        st.text("No products found.")
+    return rows
 
 # テーブルを作成し、JANコード列を追加する
+def create_table():
+    conn, cur = connect_db()
+    cur.execute(''' 
+        CREATE TABLE IF NOT EXISTS products (
+            product TEXT NOT NULL,
+            jan_code TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def add_jan_code_column():
+    conn, cur = connect_db()
+    try:
+        cur.execute("ALTER TABLE products ADD COLUMN jan_code TEXT NOT NULL")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # 列がすでに存在している場合はエラーを無視する
+    conn.close()
+
 create_table()
 add_jan_code_column()
 
@@ -100,7 +95,7 @@ with st.form(key='my2_form', clear_on_submit=True):
 
     submit_button = st.form_submit_button(label='送信')
 
-if jan_code:
+if submit_button and jan_code:
     product = search_product_by_code(jan_code)
     if product:
         st.text("商品情報:")
@@ -110,11 +105,13 @@ if jan_code:
         st.text(f"詳細ページ: [商品ページ](https://www.jancodelookup.com/code/{product['codeNumber']})")
         st.image(product.get('itemImageUrl'))
 
-        # 商品をデータベースに挿入（商品名とJANコード）
-        insert_product(product.get('itemName', '不明'), jan_code) 
-        
+        # 商品をデータベースに挿入（商品名とJANコード） 既存商品がない場合のみ
+        if not check_if_product_exists(jan_code):
+            insert_product(product.get('itemName', '不明'), jan_code)
+            st.success(f"{product.get('itemName', '不明')} がデータベースに追加されました。")
 else:
-    st.text("JANコードを入力してください")
+    if submit_button:
+        st.text("JANコードを入力してください")
 
 # 「冷蔵庫の中身」のセクションだけ細くて水色の背景
 st.markdown("""
@@ -122,7 +119,7 @@ st.markdown("""
         .refrigerator-container {
             background-color: #c1e4e9;  /* 水色の背景 */
             padding: 5px;
-            width: 100%;  /* 幅を60%に設定（細くする） */
+            width: 60%;  /* 幅を60%に設定（細くする） */
             margin: 0 auto;  /* 中央に配置 */
             border-radius: 5px;  /* 角を丸くする */
         }
@@ -131,16 +128,29 @@ st.markdown("""
 
 st.subheader("冷蔵庫の中身")
 st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-fetch_all_products()
-st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
 
-# 商品名で削除
-delete_name = st.text_input("削除する商品名を入力してください")
+# 商品を取得し、リストとして表示
+if 'products' not in st.session_state:
+    st.session_state.products = fetch_all_products()
 
-if st.button("商品削除（名前）"):
-    delete_product_by_name(delete_name)
-    # 削除後に最新の商品リストを表示
-    st.text("商品を削除しました。")
-    st.rerun()  # アプリケーションを再実行してリストを更新
+for product in st.session_state.products:
+    product_name, jan_code = product
+    st.text(f"商品名: {product_name}, JANコード: {jan_code}")
+
+    try:
+        # 削除ボタンのkeyを一意に設定する
+        delete_button = st.button(f"削除: {product_name}", key=f"delete_{jan_code}_{product_name}")
+        if delete_button:
+            delete_product_by_code(jan_code)
+            # 削除後にリストを即座に更新する
+            st.session_state.products = fetch_all_products()  # 商品リストを即座に更新
+            st.success(f"{product_name} が削除されました。")
+    except Exception as e:
+        st.error(f"削除中にエラーが発生しました: {str(e)}")
+
+# 更新ボタンの追加
+if st.button("冷蔵庫の中身を更新"):
+    # 最新の商品リストを手動で更新
+    st.session_state.products = fetch_all_products()  # 商品リストを再取得
+
+st.markdown('</div>', unsafe_allow_html=True)
