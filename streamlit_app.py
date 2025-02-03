@@ -194,7 +194,7 @@ def show_signup():
 
 # 商品管理画面
 def show_product_management():
-    st.title("冷蔵庫管理")
+    st.subheader("冷蔵庫管理")
 
     # JANコードを入力するフォーム
     with st.form(key='my2_form', clear_on_submit=True):
