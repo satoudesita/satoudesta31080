@@ -266,6 +266,21 @@ def show_shopping_list():
 
         st.subheader("買い物リスト")
 
+        st.markdown("""
+        <style>
+            .refrigerator-container {
+               background-color: #c1e4e9;  /* 水色の背景 */
+               padding: 5px;
+               width: 100%;  /* 幅を60%に設定（細くする） */
+               margin: 0 auto;  /* 中央に配置 */
+               border-radius: 5px;  /* 角を丸くする */
+         }
+        </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
         if shopping_list:
             for item in shopping_list:
                 item_name, username = item
@@ -280,6 +295,9 @@ def show_shopping_list():
                         st.success(f"{item_name} が買い物リストから削除されました。")
                         st.rerun()
 
+        st.markdown('<div class="refrigerator-container">', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
         new_item = st.text_input("買い物リストに追加する商品名")
         if st.button("商品を追加"):
             if new_item:
