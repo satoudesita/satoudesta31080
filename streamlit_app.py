@@ -269,13 +269,16 @@ def show_shopping_list():
         if shopping_list:
             for item in shopping_list:
                 item_name, username = item
-                st.text(item_name)
-                delete_button = st.button(f"削除", key=f"delete_shopping_{item_name}")
-                if delete_button:
-                    delete_shopping_item(item_name, username)
-                    shopping_list = fetch_shopping_list(username)
-                    st.success(f"{item_name} が買い物リストから削除されました。")
-                    st.rerun()
+                col3, col4 = st.columns([4, 1])
+                with col3:
+                    st.text(item_name)
+                with col4:
+                    delete_button = st.button(f"削除", key=f"delete_shopping_{item_name}")
+                    if delete_button:
+                        delete_shopping_item(item_name, username)
+                        shopping_list = fetch_shopping_list(username)
+                        st.success(f"{item_name} が買い物リストから削除されました。")
+                        st.rerun()
 
         new_item = st.text_input("買い物リストに追加する商品名")
         if st.button("商品を追加"):
