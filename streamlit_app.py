@@ -49,10 +49,10 @@ seconds_left = int(remaining.total_seconds())
 
 st.markdown(
     f"""
-    <div style="text-align: center; padding-top: 50px;">
-        <h2 style="font-size: 48px; color: #333;">出席コード</h2>
-        <h1 style="font-size: 100px; color: #004080;">{st.session_state.code}</h1>
-        <p style="font-size: 36px; color: #666;">次の更新まで: {seconds_left} 秒</p>
+    <div style="text-align: center; padding-top: 200px;">
+        <h2 style="font-size: 96px; color: #333;">出席コード</h2>
+        <h1 style="font-size: 200px; color: #004080;">{st.session_state.code}</h1>
+        <p style="font-size: 72px; color: #666;">次の更新まで: {seconds_left} 秒</p>
     </div>
     """,
     unsafe_allow_html=True
