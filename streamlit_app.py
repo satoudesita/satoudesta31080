@@ -26,7 +26,8 @@ def send_post_request(url, data):
 if 'next_change' not in st.session_state:
     st.session_state.next_change = datetime.now() + timedelta(minutes=4)
     st.session_state.code = random.randint(1000, 9999)
-    send_post_request('https://prod-08.japaneast.logic.azure.com:443/workflows/2dad7268f2844042bae005c2ec7916f6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=V-60f4bGMzshRcghrvSV7qt-WEgKqbgQGfGk2F8BQPk', st.session_state.code)
+    asd=st.session_state.code
+    send_post_request('https://prod-08.japaneast.logic.azure.com:443/workflows/2dad7268f2844042bae005c2ec7916f6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=V-60f4bGMzshRcghrvSV7qt-WEgKqbgQGfGk2F8BQPk', asd)
 
 now = datetime.now()
 
@@ -37,7 +38,8 @@ if remaining.total_seconds() <= 0:
     st.session_state.code = random.randint(1000, 9999)
     st.session_state.next_change = now + timedelta(minutes=4)
     remaining = st.session_state.next_change - now
-    send_post_request('https://prod-08.japaneast.logic.azure.com:443/workflows/2dad7268f2844042bae005c2ec7916f6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=V-60f4bGMzshRcghrvSV7qt-WEgKqbgQGfGk2F8BQPk', st.session_state.code)
+    asd=st.session_state.code
+    send_post_request('https://prod-08.japaneast.logic.azure.com:443/workflows/2dad7268f2844042bae005c2ec7916f6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=V-60f4bGMzshRcghrvSV7qt-WEgKqbgQGfGk2F8BQPk', asd)
 
 
 seconds_left = int(remaining.total_seconds())
@@ -49,4 +51,4 @@ st.markdown(f"次のコード更新まで: **{seconds_left} 秒**")
 
 
 time.sleep(1)
-st.rerun()
+
