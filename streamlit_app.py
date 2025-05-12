@@ -6,11 +6,11 @@ import requests
 
 st.set_page_config(page_title="ランダム4桁コード", layout="centered")
 
-def send_post_request(url, data):
+def send_post_request(url, code):
         try:
 
             request_data = {
-                "code": str(data)  # データを文字列として 'body' フィールドに格納
+                "code": str(code)  # データを文字列として 'body' フィールドに格納
             }
            
             response = requests.post(url, json=request_data)  # json形式でPOSTリクエストを送信
