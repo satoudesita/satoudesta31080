@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta
 import requests
 
-st.set_page_config(page_title="ランダム4桁コード", layout="centered")
+st.set_page_config(page_title="ランダム4コード", layout="centered")
 
 def send_post_request(url, code):
     if code:  # 空白でないか確認
