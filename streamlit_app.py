@@ -23,8 +23,8 @@ def send_post_request(url, code):
 # 初期化
 if 'code' not in st.session_state or 'next_change' not in st.session_state:
     st.session_state.code = random.randint(1000, 9999)
-    st.session_state.next_change = datetime.now() + timedelta(minutes=4)
-    send_post_request("https://prod-08.japaneast.logic.azure.com:443/workflows/...", st.session_state.code)
+    st.session_state.next_change = datetime.now() + timedelta(minutes=1)
+    send_post_request("https://prod-01.japaneast.logic.azure.com:443/workflows/38f7b8c8d476411d8d4351e0638c6750/triggers/manual/paths/invoke?api-version=2016-06-01", st.session_state.code)
 
 # 残り時間の計算
 now = datetime.now()
@@ -33,8 +33,8 @@ remaining = st.session_state.next_change - now
 # 4分経過したら更新
 if remaining.total_seconds() <= 0:
     st.session_state.code = random.randint(1000, 9999)
-    st.session_state.next_change = now + timedelta(minutes=4)
-    send_post_request("https://prod-08.japaneast.logic.azure.com:443/workflows/...", st.session_state.code)
+    st.session_state.next_change = now + timedelta(minutes=1)
+    send_post_request("https://prod-01.japaneast.logic.azure.com:443/workflows/38f7b8c8d476411d8d4351e0638c6750/triggers/manual/paths/invoke?api-version=2016-06-01", st.session_state.code)
     remaining = st.session_state.next_change - now
 
 # 表示
