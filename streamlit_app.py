@@ -51,7 +51,7 @@ st.markdown(
     f"""
     <div style="text-align: center; padding-top: 210px;">
         <h2 style="font-size: 96px; color: #333;">出席コード</h2>
-        <h1 style="font-size: 200px; color: #004080;">{st.session_state.code}</h1>
+        <h1 style="font-size: 300px; color: #004080;">{st.session_state.code}</h1>
         <p style="font-size: 72px; color: #666;">次の更新まで: {seconds_left} 秒</p>
     </div>
     """,
