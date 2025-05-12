@@ -50,5 +50,5 @@ st.markdown(f"### 現在のコード: `{st.session_state.code}`")
 st.markdown(f"次のコード更新まで: **{seconds_left} 秒**")
 
 
-time.sleep(1)
-
+time.sleep(5)
+st.rerun()
